@@ -154,7 +154,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Django REST Framework Configuration
+# Django REST Framework configuration
 REST_FRAMEWORK = {
     
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -171,7 +171,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-# JWT Configuration for cookie-based authentication
+# JWT configuration for cookie-based authentication
 from datetime import timedelta
 
 SIMPLE_JWT = {
@@ -196,7 +196,7 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_REFRESH_SAMESITE': 'Lax',
 }
 
-# CORS Configuration
+# CORS configuration
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
     "http://127.0.0.1:3000",

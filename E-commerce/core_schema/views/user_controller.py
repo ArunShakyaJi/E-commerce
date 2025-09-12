@@ -113,67 +113,50 @@ def user_signup(request):
             'error': f'An error occurred: {str(e)}'
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def user_profile(request):
+def user_profile(request, user_id):
+    """
+    Get user profile by user_id from URL, with token validation
+    """
+    try:
+        # Validate JWT token
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return Response({'error': 'Authorization header missing'}, status=status.HTTP_401_UNAUTHORIZED)
+        token = auth_header.split(' ')[1]
+        jwt_auth = JWTAuthentication()
+        jwt_auth.get_validated_token(token)  # Just validate, don't extract user_id
+
+        # Get user data from Supabase by user_id from URL
+        user_result = supabase.table('auth_user').select('*').eq('id', user_id).execute()
+        if not user_result.data:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        user = user_result.data[0]
+        return Response({'user': {
+            'id': user.get('id'),
+            'username': user.get('username'),
+            'email': user.get('email'),
+            'first_name': user.get('first_name'),
+            'last_name': user.get('last_name'),
+            'is_staff': user.get('is_staff'),
+            'is_superuser': user.get('is_superuser'),
+            'is_active': user.get('is_active'),
+            'date_joined': user.get('date_joined'),
+            'last_login': user.get('last_login')
+        }}, status=status.HTTP_200_OK)
+    except (InvalidToken, TokenError):
+        return Response({'error': 'Invalid or expired token'}, status=status.HTTP_401_UNAUTHORIZED)
+    except Exception as e:
+        return Response({'error': f'An error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     """
     Get current user profile from token
     """
-    try:
-        # Get user ID from JWT token
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return Response({
-                'error': 'Authorization header missing'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        token = auth_header.split(' ')[1]
-        jwt_auth = JWTAuthentication()
-        validated_token = jwt_auth.get_validated_token(token)
-        user_id = validated_token.get('user_id')
-        
-        if not user_id:
-            return Response({
-                'error': 'Invalid token'
-            }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        # Get user data from Supabase
-        user_result = supabase.table('auth_user').select('*').eq('id', user_id).execute()
-        
-        if not user_result.data:
-            return Response({
-                'error': 'User not found'
-            }, status=status.HTTP_404_NOT_FOUND)
-        
-        user = user_result.data[0]
-        
-        return Response({
-            'user': {
-                'id': user.get('id'),
-                'username': user.get('username'),
-                'email': user.get('email'),
-                'first_name': user.get('first_name'),
-                'last_name': user.get('last_name'),
-                'is_staff': user.get('is_staff'),
-                'is_superuser': user.get('is_superuser'),
-                'is_active': user.get('is_active'),
-                'date_joined': user.get('date_joined'),
-                'last_login': user.get('last_login')
-            }
-        }, status=status.HTTP_200_OK)
-        
-    except (InvalidToken, TokenError):
-        return Response({
-            'error': 'Invalid or expired token'
-        }, status=status.HTTP_401_UNAUTHORIZED)
-    except Exception as e:
-        return Response({
-            'error': f'An error occurred: {str(e)}'
-        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['PUT', 'PATCH'])
 @permission_classes([IsAuthenticated])
-def update_user_profile(request):
+def update_user_profile(request , user_id):
     """
     Update current user profile
     """
@@ -188,7 +171,7 @@ def update_user_profile(request):
         token = auth_header.split(' ')[1]
         jwt_auth = JWTAuthentication()
         validated_token = jwt_auth.get_validated_token(token)
-        user_id = validated_token.get('user_id')
+        user_id = user_id
         
         if not user_id:
             return Response({

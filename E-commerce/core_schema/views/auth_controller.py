@@ -12,6 +12,7 @@ from django.contrib.auth.hashers import check_password
 from supabase import create_client, Client
 from decouple import config
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from datetime import datetime
@@ -98,24 +99,33 @@ def user_login(request):
             'last_login': current_time
         }).eq('id', user.get('id')).execute()
         
-        # Generate JWT tokens with custom claims
-        refresh = RefreshToken()
-        refresh['user_id'] = user.get('id')
-        refresh['username'] = user.get('username')
-        refresh['email'] = user.get('email')
-        refresh['is_staff'] = user.get('is_staff', False)
-        refresh['is_superuser'] = user.get('is_superuser', False)
-        refresh['is_active'] = user.get('is_active', True)
-        
+        # Sync Supabase user to Django user model
+        User = get_user_model()
+        django_user, created = User.objects.get_or_create(
+            username=user.get('username'),
+            defaults={
+                'email': user.get('email'),
+                'first_name': user.get('first_name', ''),
+                'last_name': user.get('last_name', ''),
+                'is_staff': user.get('is_staff', False),
+                'is_superuser': user.get('is_superuser', False),
+                'is_active': user.get('is_active', True),
+            }
+        )
+        # Update fields if user already exists
+        if not created:
+            django_user.email = user.get('email')
+            django_user.first_name = user.get('first_name', '')
+            django_user.last_name = user.get('last_name', '')
+            django_user.is_staff = user.get('is_staff', False)
+            django_user.is_superuser = user.get('is_superuser', False)
+            django_user.is_active = user.get('is_active', True)
+            django_user.save()
+
+        # Generate JWT tokens using Django user
+        refresh = RefreshToken.for_user(django_user)
         access_token = refresh.access_token
-        # Add same claims to access token
-        access_token['user_id'] = user.get('id')
-        access_token['username'] = user.get('username')
-        access_token['email'] = user.get('email')
-        access_token['is_staff'] = user.get('is_staff', False)
-        access_token['is_superuser'] = user.get('is_superuser', False)
-        access_token['is_active'] = user.get('is_active', True)
-        
+
         return Response({
             'message': 'Login successful',
             'user': {

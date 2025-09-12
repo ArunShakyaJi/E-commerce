@@ -6,8 +6,8 @@ from . import views
 urlpatterns = [
     # User endpoints
     path('signup/', views.user_signup, name='user_signup'),
-    path('profile/', views.user_profile, name='user_profile'),
-    path('profile/update/', views.update_user_profile, name='update_user_profile'),
+    path('profile/<int:user_id>/', views.user_profile, name='user_profile'),
+    path('profile/update/<int:user_id>/', views.update_user_profile, name='update_user_profile'),
     
     # Authentication endpoints
     path('login/', views.user_login, name='user_login'),
