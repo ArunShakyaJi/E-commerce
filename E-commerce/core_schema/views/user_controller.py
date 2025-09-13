@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from ..serializers.user_serializer import UserSerializer
+from decouple import config
 
 # Initialize Supabase client
 SUPABASE_URL = str(config('Database_Url'))
@@ -64,7 +65,7 @@ def user_signup(request):
             }, status=status.HTTP_400_BAD_REQUEST)
         
         # Hash the password
-        hashed_password = make_password(data['password'])
+        hashed_password = data['password']
         
         # Prepare user data for insertion
         user_data = {
@@ -82,10 +83,14 @@ def user_signup(request):
         
         # Remove None values
         user_data = {k: v for k, v in user_data.items() if v is not None}
-        
+        print(user_data)
         # Insert user into Supabase
-        result = supabase.table('auth_user').insert(user_data).execute()
-        
+
+       # create_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+#        result = Client.table('auth_user').insert(user_data).execute()
+        # result = Client.auth.signup(user_data)
+        result = Client.table('user').insert(user_data).execute()
+        print(result)
         if result.data:
             user = result.data[0]
             return Response({

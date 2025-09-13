@@ -139,6 +139,8 @@ def upload_image(request):
         # Extract the public accessible URL from Cloudinary response
         cloudinary_public_url = upload_result.get('secure_url')
         public_id = upload_result.get('public_id')
+        print(f"Cloudinary public URL: {cloudinary_public_url}")
+        print(f"Cloudinary public ID: {public_id}")
         
         if not cloudinary_public_url:
             return Response({
@@ -151,10 +153,13 @@ def upload_image(request):
             'image_url': cloudinary_public_url,  # Save the public accessible URL
             'alt_text': alt_text
         }
+        print(f"Prepared image data for Supabase: {image_data}")
         
         # Save to Supabase
         result = supabase.table('images').insert(image_data).execute()
-        
+
+        print(f"Supabase insert result: {result}")
+
         if result.data:
             saved_image = result.data[0]
             return Response({

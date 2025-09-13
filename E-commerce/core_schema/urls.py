@@ -40,8 +40,8 @@ urlpatterns = [
     
     # Image endpoints
     path('upload-image/', views.upload_image, name='upload_image'),
-    path('upload-image-test/', views.upload_image_test, name='upload_image_test'),  # Test without auth
-    path('test-cloudinary/', views.test_cloudinary_config, name='test_cloudinary'),  # Test Cloudinary config
-    path('debug-upload/', views.debug_file_upload, name='debug_upload'),  # Debug file upload
-    path('simple-cloudinary-test/', views.simple_cloudinary_test, name='simple_cloudinary_test'),  # Simple Cloudinary test
+  #  path('upload-image-test/', views.upload_image_test, name='upload_image_test'),  # Test without auth
+  #  path('test-cloudinary/', views.test_cloudinary_config, name='test_cloudinary'),  # Test Cloudinary config
+  #  path('debug-upload/', views.debug_file_upload, name='debug_upload'),  # Debug file upload
+   # path('simple-cloudinary-test/', views.simple_cloudinary_test, name='simple_cloudinary_test'),  # Simple Cloudinary test
 ]
